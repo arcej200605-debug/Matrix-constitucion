@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATRIX - Dashboard</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-bottom: 2px solid #c0392b;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #c0392b;
+            overflow: hidden;
+        }
+
+        .logo-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-info h1 {
+            font-size: 24px;
+            letter-spacing: 4px;
+            color: #ffffff;
+        }
+
+        .user-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-registered {
+            background: linear-gradient(135deg, #c0392b, #a02a2a);
+            color: white;
+        }
+
+        .badge-guest {
+            background: #333;
+            color: #999;
+            border: 1px solid #555;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid #666;
+            border-radius: 8px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-section h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #c0c0c0;
+        }
+
+        .welcome-section p {
+            color: #888;
+        }
+
+        /* TARJETAS DE FUNCIONES */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: #c0392b;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(192, 57, 43, 0.3);
+        }
+
+        .feature-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feature-card.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .btn-feature {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #c0392b, #a02a2a);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-feature:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            transform: translateY(-2px);
+        }
+
+        .btn-feature:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .btn-feature.locked {
+            background: #2a2a2a;
+            color: #666;
+        }
+
+        /* BANNER INVITADO */
+        .guest-banner {
+            background: linear-gradient(135deg, #c0392b, #8b1f1f);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: none;
+        }
+
+        .guest-banner.show {
+            display: block;
+        }
+
+        .guest-banner h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .guest-banner p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .btn-register {
+            padding: 14px 30px;
+            background: white;
+            color: #c0392b;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo-section">
+            <div class="logo-small">
+                <img src="https://i.ibb.co/kgcfdYf3/IMG-20260118-WA0132.jpg" alt="Matrix">
+            </div>
+            <div class="brand-info">
+                <h1>MATRIX</h1>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div id="userBadge" class="user-badge"></div>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <div class="container">
+        <!-- BIENVENIDA -->
+        <div class="welcome-section">
+            <h2 id="welcomeTitle">Bienvenido</h2>
+            <p id="welcomeSubtitle">Accede a todas las funciones disponibles</p>
+        </div>
+
+        <!-- BANNER PARA INVITADOS -->
+        <div id="guestBanner" class="guest-banner">
+            <h3>🎯 ¡Regístrate para acceso completo!</h3>
+            <p>Como invitado tienes acceso limitado. Crea tu cuenta para desbloquear todas las funciones.</p>
+            <button class="btn-register" onclick="goToRegister()">Crear Cuenta Gratis</button>
+        </div>
+
+        <!-- GRID DE FUNCIONES -->
+        <div class="features-grid">
+            <!-- VER CLASES -->
+            <div class="feature-card" id="card-clases">
+                <div class="feature-icon">📅</div>
+                <h3>Ver Clases</h3>
+                <p>Consulta el horario de todas nuestras clases disponibles</p>
+                <button class="btn-feature" onclick="verClases()">Ver Horarios</button>
+            </div>
+
+            <!-- RESERVAR CLASES -->
+            <div class="feature-card" id="card-reservar">
+                <div class="feature-icon">✅</div>
+                <h3>Reservar Clases</h3>
+                <p>Reserva tu lugar en las clases que desees</p>
+                <button class="btn-feature" id="btn-reservar" onclick="reservarClase()">Reservar</button>
+            </div>
+
+            <!-- HISTORIAL -->
+            <div class="feature-card" id="card-historial">
+                <div class="feature-icon">📊</div>
+                <h3>Ver Historial</h3>
+                <p>Revisa tu historial de asistencias y progreso</p>
+                <button class="btn-feature" id="btn-historial" onclick="verHistorial()">Ver Historial</button>
+            </div>
+
+            <!-- VIDEOS -->
+            <div class="feature-card" id="card-videos">
+                <div class="feature-icon">🎥</div>
+                <h3>Acceso a Videos</h3>
+                <p>Videos exclusivos de técnicas y entrenamientos</p>
+                <button class="btn-feature" id="btn-videos" onclick="verVideos()">Ver Videos</button>
+            </div>
+
+            <!-- CHAT -->
+            <div class="feature-card" id="card-chat">
+                <div class="feature-icon">💬</div>
+                <h3>Chat/Mensajes</h3>
+                <p>Comunícate con instructores y compañeros</p>
+                <button class="btn-feature" id="btn-chat" onclick="abrirChat()">Abrir Chat</button>
+            </div>
+
+            <!-- PERFIL -->
+            <div class="feature-card" id="card-perfil">
+                <div class="feature-icon">👤</div>
+                <h3>Perfil Personalizado</h3>
+                <p>Administra tu información y preferencias</p>
+                <button class="btn-feature" id="btn-perfil" onclick="editarPerfil()">Mi Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // 🔥 CONFIGURACIÓN DE FIREBASE
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY_AQUI",
+            authDomain: "TU_AUTH_DOMAIN_AQUI",
+            projectId: "TU_PROJECT_ID_AQUI",
+            storageBucket: "TU_STORAGE_BUCKET_AQUI",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID_AQUI",
+            appId: "TU_APP_ID_AQUI"
+        };
+
+        let auth;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+        } catch (error) {
+            console.error('Error Firebase:', error);
+        }
+
+        // ========================================
+        // 🔐 VERIFICAR TIPO DE USUARIO
+        // ========================================
+        
+        let isRegistered = false;
+        let isGuest = false;
+        let userData = null;
+
+        window.onload = function() {
+            // Verificar usuario registrado
+            const user = JSON.parse(localStorage.getItem('matrixUser'));
+            const guest = JSON.parse(localStorage.getItem('matrixGuest'));
+
+            if (user && user.email) {
+                // USUARIO REGISTRADO
+                isRegistered = true;
+                userData = user;
+                setupRegisteredUser(user);
+            } else if (guest && guest.isGuest) {
+                // INVITADO
+                isGuest = true;
+                userData = guest;
+                setupGuestUser(guest);
+            } else {
+                // No hay sesión - redirigir al login
+                window.location.href = 'index.html';
+            }
+        };
+
+        // ========================================
+        // 👤 CONFIGURAR USUARIO REGISTRADO
+        // ========================================
+        
+        function setupRegisteredUser(user) {
+            // Badge
+            document.getElementById('userBadge').innerHTML = `
+                <span>✓</span> ${user.email}
+            `;
+            document.getElementById('userBadge').className = 'user-badge badge-registered';
+
+            // Título
+            document.getElementById('welcomeTitle').textContent = '¡Hola, ' + user.email.split('@')[0] + '!';
+            document.getElementById('welcomeSubtitle').textContent = 'Tienes acceso completo a todas las funciones';
+
+            // Ocultar banner de invitado
+            document.getElementById('guestBanner').classList.remove('show');
+
+            // TODAS LAS FUNCIONES HABILITADAS
+            // No hacemos nada, ya están habilitadas por defecto
+        }
+
+        // ========================================
+        // 🎫 CONFIGURAR INVITADO
+        // ========================================
+        
+        function setupGuestUser(guest) {
+            // Badge
+            document.getElementById('userBadge').innerHTML = `
+                <span>👤</span> ${guest.name} (Invitado)
+            `;
+            document.getElementById('userBadge').className = 'user-badge badge-guest';
+
+            // Título
+            document.getElementById('welcomeTitle').textContent = '¡Hola, ' + guest.name + '!';
+            document.getElementById('welcomeSubtitle').textContent = 'Acceso limitado - Regístrate para más funciones';
+
+            // Mostrar banner
+            document.getElementById('guestBanner').classList.add('show');
+
+            // BLOQUEAR FUNCIONES PREMIUM
+            bloquearFuncion('card-reservar', 'btn-reservar');
+            bloquearFuncion('card-historial', 'btn-historial');
+            bloquearFuncion('card-videos', 'btn-videos');
+            bloquearFuncion('card-chat', 'btn-chat');
+            bloquearFuncion('card-perfil', 'btn-perfil');
+        }
+
+        function bloquearFuncion(cardId, btnId) {
+            const card = document.getElementById(cardId);
+            const btn = document.getElementById(btnId);
+            
+            card.classList.add('locked');
+            btn.disabled = true;
+            btn.classList.add('locked');
+            btn.textContent = 'Solo para usuarios registrados';
+        }
+
+        // ========================================
+        // 🎯 FUNCIONES DE CADA TARJETA
+        // ========================================
+
+        function verClases() {
+            alert('📅 Mostrando horario de clases...\n\nLunes a Viernes: 6:00 AM - 9:00 PM\nSábados: 8:00 AM - 2:00 PM');
+            // Aquí irías a tu página de horarios
+            // window.location.href = 'clases.html';
+        }
+
+        function reservarClase() {
+            if (isGuest) {
+                alert('🔒 Función bloqueada\n\nDebes registrarte para reservar clases.');
+                return;
+            }
+            alert('✅ Abriendo sistema de reservas...');
+            // window.location.href = 'reservar.html';
+        }
+
+        function verHistorial() {
+            if (isGuest) {
+                alert('🔒 Función bloqueada\n\nDebes registrarte para ver tu historial.');
+                return;
+            }
+            alert('📊 Mostrando tu historial de clases...');
+            // window.location.href = 'historial.html';
+        }
+
+        function verVideos() {
+            if (isGuest) {
+                alert('🔒 Función bloqueada\n\nDebes registrarte para acceder a los videos.');
+                return;
+            }
+            alert('🎥 Abriendo biblioteca de videos...');
+            // window.location.href = 'videos.html';
+        }
+
+        function abrirChat() {
+            if (isGuest) {
+                alert('🔒 Función bloqueada\n\nDebes registrarte para usar el chat.');
+                return;
+            }
+            alert('💬 Abriendo chat...');
+            // window.location.href = 'chat.html';
+        }
+
+        function editarPerfil() {
+            if (isGuest) {
+                alert('🔒 Función bloqueada\n\nDebes registrarte para tener un perfil.');
+                return;
+            }
+            alert('👤 Abriendo tu perfil...');
+            // window.location.href = 'perfil.html';
+        }
+
+        // ========================================
+        // 🚪 CERRAR SESIÓN
+        // ========================================
+        
+        function logout() {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                localStorage.removeItem('matrixUser');
+                localStorage.removeItem('matrixGuest');
+                
+                if (auth) {
+                    auth.signOut();
+                }
+                
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========================================
+        // 📝 IR A REGISTRO
+        // ========================================
+        
+        function goToRegister() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

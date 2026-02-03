@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATRIX - Portal de Acceso</title>
+    <style>
+        /* ===== RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== FONDO ANIMADO ===== */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(192, 57, 43, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(192, 192, 192, 0.03) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            background: #0a0a0a;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ===== PANEL IZQUIERDO - MARCA ===== */
+        .brand-panel {
+            background: linear-gradient(135deg, #c0392b 0%, #8b1f1f 100%);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .logo-big {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-big img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+        }
+
+        .brand-name {
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: 12px;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== PANEL DERECHO - LOGIN ===== */
+        .login-panel {
+            background: #0f0f0f;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .welcome-text {
+            margin-bottom: 40px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* ===== TABS DE ACCESO ===== */
+        .access-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #1a1a1a;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .tab.active {
+            color: #c0392b;
+            border-bottom-color: #c0392b;
+        }
+
+        .tab:hover:not(.active) {
+            color: #999;
+        }
+
+        /* ===== FORMULARIO ===== */
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .input-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 15px 18px;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-box:focus {
+            border-color: #c0392b;
+            background: #1f1f1f;
+            box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.1);
+        }
+
+        .input-box::placeholder {
+            color: #555;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #c0392b 0%, #a02a2a 100%);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(192, 57, 43, 0.6);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #2a2a2a;
+        }
+
+        .divider-text {
+            display: inline-block;
+            padding: 0 15px;
+            background: #0f0f0f;
+            color: #666;
+            font-size: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #999;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #c0c0c0;
+            color: #c0c0c0;
+            background: rgba(192, 192, 192, 0.05);
+        }
+
+        /* ===== BOTONES REDES SOCIALES ===== */
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-social {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-social:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-social.facebook {
+            background: #1877f2;
+        }
+
+        .btn-social.facebook:hover {
+            background: #145dbf;
+        }
+
+        .btn-social.instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+
+        .btn-social.whatsapp {
+            background: #25d366;
+        }
+
+        .btn-social.whatsapp:hover {
+            background: #1da851;
+        }
+
+        .btn-social.tiktok {
+            background: #000000;
+            border: 1px solid #00f2ea;
+        }
+
+        .btn-social.tiktok:hover {
+            background: #111111;
+            box-shadow: 0 0 15px rgba(0, 242, 234, 0.3);
+        }
+
+        .btn-social.maps {
+            background: #4285f4;
+        }
+
+        .btn-social.maps:hover {
+            background: #3367d6;
+        }
+
+        @media (max-width: 480px) {
+            .social-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+            }
+
+            .brand-panel {
+                padding: 40px 30px;
+            }
+
+            .logo-big {
+                width: 120px;
+                height: 120px;
+            }
+
+            .brand-name {
+                font-size: 40px;
+                letter-spacing: 8px;
+            }
+
+            .brand-tagline {
+                font-size: 12px;
+            }
+
+            .login-panel {
+                padding: 40px 30px;
+            }
+
+            .welcome-title {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- PANEL IZQUIERDO - MARCA -->
+        <div class="brand-panel">
+            <div class="logo-big">
+                <img src="https://i.ibb.co/kgcfdYf3/IMG-20260118-WA0132.jpg" alt="Matrix Jiu Jitsu">
+            </div>
+            <h1 class="brand-name">MARTIX</h1>
+            <p class="brand-tagline">Jiu Jitsu Constitución</p>
+        </div>
+
+        <!-- PANEL DERECHO - LOGIN -->
+        <div class="login-panel">
+            <div class="welcome-text">
+                <h2 class="welcome-title">Bienvenido</h2>
+                <p class="welcome-subtitle">Selecciona tu tipo de acceso</p>
+            </div>
+
+            <!-- TABS -->
+            <div class="access-tabs">
+                <button class="tab active" onclick="switchTab('usuario')">Usuario</button>
+                <button class="tab" onclick="switchTab('invitado')">Invitado</button>
+            </div>
+
+            <!-- FORMULARIO USUARIO -->
+            <div id="usuario-form" class="form-container active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="input-wrapper">
+                        <label class="input-label">Usuario</label>
+                        <input type="text" class="input-box" placeholder="Ingresa tu usuario" required>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label class="input-label">Contraseña</label>
+                        <input type="password" class="input-box" placeholder="Ingresa tu contraseña" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                </form>
+            </div>
+
+            <!-- FORMULARIO INVITADO -->
+            <div id="invitado-form" class="form-container">
+                <div class="input-wrapper">
+                    <label class="input-label">Nombre</label>
+                    <input type="text" class="input-box" placeholder="Tu nombre completo">
+                </div>
+
+                <button class="btn-submit" onclick="handleGuest()">Acceder como Invitado</button>
+            </div>
+
+            <div class="divider">
+                <span class="divider-text">O</span>
+            </div>
+
+            <!-- Botones de Redes Sociales -->
+            <div class="social-buttons">
+                <button class="btn-social facebook" onclick="goToFacebook()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    Facebook
+                </button>
+                
+                <button class="btn-social instagram" onclick="goToInstagram()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    Instagram
+                </button>
+                
+                <button class="btn-social tiktok" onclick="goToTikTok()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+                    </svg>
+                    TikTok
+                </button>
+
+                <button class="btn-social maps" onclick="goToMaps()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Ubicación
+                </button>
+            </div>
+
+            <div class="divider">
+                <span class="divider-text">¿No tienes cuenta?</span>
+            </div>
+
+            <button class="btn-secondary" onclick="goToRegister()">Registrarse</button>
+        </div>
+    </div>
+
+    <script>
+        // Cambiar entre tabs
+        function switchTab(tabName) {
+            // Actualizar tabs activos
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Mostrar formulario correspondiente
+            document.querySelectorAll('.form-container').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(tabName + '-form').classList.add('active');
+        }
+
+        // Manejo del login
+        function handleLogin(e) {
+            e.preventDefault();
+            alert('Iniciando sesión...');
+            // window.location.href = 'dashboard.html';
+        }
+
+        // Manejo de invitado
+        function handleGuest() {
+            alert('Accediendo como invitado...');
+            // window.location.href = 'guest.html';
+        }
+
+        // Redes Sociales
+        function goToFacebook() {
+            window.open('https://www.facebook.com/share/1D3FAgQMUa/', '_blank');
+        }
+
+        function goToInstagram() {
+            // Intenta abrir la app primero, si no funciona abre el navegador
+            const username = 'matrixjiujitsuconstitucion';
+            const appUrl = 'instagram://user?username=' + username;
+            const webUrl = 'https://www.instagram.com/' + username + '/';
+            
+            window.location.href = appUrl;
+            
+            setTimeout(function() {
+                window.open(webUrl, '_blank');
+            }, 1000);
+        }
+
+        function goToTikTok() {
+            // Intenta abrir la app de TikTok primero
+            const tiktokUrl = 'https://vm.tiktok.com/ZS91NxacFUbwS-Mh9sK/';
+            window.open(tiktokUrl, '_blank');
+        }
+
+        function goToMaps() {
+            // Intenta abrir la app de Google Maps primero
+            const coordinates = 'https://maps.app.goo.gl/GABfRnHoSJfhyUTT7';
+            const appUrl = 'geo:0,0?q=' + encodeURIComponent('Matrix Jiu Jitsu Constitución');
+            
+            // Intenta abrir la app
+            window.location.href = appUrl;
+            
+            // Si no funciona, abre Google Maps web
+            setTimeout(function() {
+                window.open(coordinates, '_blank');
+            }, 1000);
+        }
+
+        function goToRegister() {
+            alert('Ir a página de registro');
+            // window.location.href = 'register.html';
+        }
+    </script>
+</body>
+</html>
