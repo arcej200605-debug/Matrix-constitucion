@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MATRIX - Dashboard</title>
-    
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
+
     <style>
         * {
             margin: 0;
@@ -23,7 +23,6 @@
             min-height: 100vh;
         }
 
-        /* HEADER */
         .header {
             background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
             border-bottom: 2px solid #c0392b;
@@ -31,7 +30,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .logo-section {
@@ -57,7 +55,6 @@
         .brand-info h1 {
             font-size: 24px;
             letter-spacing: 4px;
-            color: #ffffff;
         }
 
         .user-badge {
@@ -88,19 +85,198 @@
             border-radius: 8px;
             color: #999;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .btn-logout:hover {
-            border-color: #c0392b;
-            color: #c0392b;
-        }
-
-        /* CONTAINER */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .feature-card.locked {
+            opacity: 0.5;
+        }
+
+        .feature-card.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+        }
+
+        .btn-feature {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #c0392b, #a02a2a);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-feature:disabled {
+            background: #333;
+            color: #666;
+        }
+
+        .guest-banner {
+            background: linear-gradient(135deg, #c0392b, #8b1f1f);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: none;
+        }
+
+        .guest-banner.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+<script>
+/* 🔐 BLOQUEO TEMPRANO */
+const user = JSON.parse(localStorage.getItem('matrixUser'));
+const guest = JSON.parse(localStorage.getItem('matrixGuest'));
+
+if (!user && !guest) {
+    window.location.href = 'index.html';
+}
+</script>
+
+<div class="header">
+    <div class="logo-section">
+        <div class="logo-small">
+            <img src="https://i.ibb.co/kgcfdYf3/IMG-20260118-WA0132.jpg">
+        </div>
+        <div class="brand-info">
+            <h1>MATRIX</h1>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:15px;">
+        <div id="userBadge" class="user-badge"></div>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="welcome-section">
+        <h2 id="welcomeTitle"></h2>
+        <p id="welcomeSubtitle"></p>
+    </div>
+
+    <div id="guestBanner" class="guest-banner">
+        <h3>🎯 ¡Regístrate para acceso completo!</h3>
+        <p>Como invitado tienes acceso limitado.</p>
+        <button onclick="goToRegister()">Crear Cuenta Gratis</button>
+    </div>
+
+    <div class="features-grid">
+
+        <div class="feature-card">
+            <h3>📅 Ver Clases</h3>
+            <button class="btn-feature" onclick="verClases()">Ver Horarios</button>
+        </div>
+
+        <div class="feature-card" id="card-reservar">
+            <h3>✅ Reservar Clases</h3>
+            <button class="btn-feature" id="btn-reservar" onclick="reservarClase()">Reservar</button>
+        </div>
+
+        <div class="feature-card" id="card-historial">
+            <h3>📊 Historial</h3>
+            <button class="btn-feature" id="btn-historial" onclick="verHistorial()">Ver</button>
+        </div>
+
+        <div class="feature-card" id="card-videos">
+            <h3>🎥 Videos</h3>
+            <button class="btn-feature" id="btn-videos" onclick="verVideos()">Ver</button>
+        </div>
+
+        <div class="feature-card" id="card-chat">
+            <h3>💬 Chat</h3>
+            <button class="btn-feature" id="btn-chat" onclick="abrirChat()">Abrir</button>
+        </div>
+
+        <div class="feature-card" id="card-perfil">
+            <h3>👤 Perfil</h3>
+            <button class="btn-feature" id="btn-perfil" onclick="editarPerfil()">Mi Perfil</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+let isGuest = false;
+
+if (user) {
+    document.getElementById('userBadge').innerHTML = '✓ ' + user.email;
+    document.getElementById('userBadge').className = 'user-badge badge-registered';
+    document.getElementById('welcomeTitle').textContent = '¡Hola ' + user.email.split('@')[0] + '!';
+    document.getElementById('welcomeSubtitle').textContent = 'Acceso completo';
+}
+
+if (guest) {
+    isGuest = true;
+    document.getElementById('userBadge').innerHTML = '👤 Invitado';
+    document.getElementById('userBadge').className = 'user-badge badge-guest';
+    document.getElementById('welcomeTitle').textContent = 'Bienvenido Invitado';
+    document.getElementById('welcomeSubtitle').textContent = 'Acceso limitado';
+    document.getElementById('guestBanner').classList.add('show');
+
+    bloquear('card-reservar','btn-reservar');
+    bloquear('card-historial','btn-historial');
+    bloquear('card-videos','btn-videos');
+    bloquear('card-chat','btn-chat');
+    bloquear('card-perfil','btn-perfil');
+}
+
+function bloquear(card, btn){
+    document.getElementById(card).classList.add('locked');
+    document.getElementById(btn).disabled = true;
+}
+
+function logout(){
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+function goToRegister(){ window.location.href = 'index.html'; }
+
+function verClases(){ alert('Mostrando clases'); }
+function reservarClase(){ if(isGuest) return alert('Solo usuarios'); }
+function verHistorial(){ if(isGuest) return alert('Solo usuarios'); }
+function verVideos(){ if(isGuest) return alert('Solo usuarios'); }
+function abrirChat(){ if(isGuest) return alert('Solo usuarios'); }
+function editarPerfil(){ if(isGuest) return alert('Solo usuarios'); }
+</script>
+
+</body>
+</html>            padding: 40px 20px;
         }
 
         .welcome-section {
